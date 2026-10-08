@@ -1,7 +1,8 @@
 # Mermaider
 
 Chrome Manifest V3 extension that renders Mermaid code blocks inline on Claude,
-including the Claude Code conversation UI.
+including Claude Code, and replaces GitHub's Mermaid widgets with an interactive
+viewer in issues, pull requests, comments, and rendered Markdown.
 
 Development lives on **dev**. **master** is the release branch.
 
@@ -14,17 +15,21 @@ npm run build
 
 1. Open `chrome://extensions` and enable **Developer mode**.
 2. Choose **Load unpacked** and select this project's **dist** directory.
-3. Refresh your Claude tab.
+3. Refresh your Claude or GitHub tab. When upgrading from the Claude-only version,
+   approve the new GitHub site access if Chrome asks.
 
 Mermaid is bundled into the extension: no CDN, remote scripts, backend, or API
-keys are needed. No extension permissions beyond the Claude content-script match
-are requested.
+keys are needed. No extension permissions are requested beyond content-script
+access to Claude and GitHub.
 
 Requires Node.js 24+ and npm. The extension requires Chrome 120+.
 
 ## Behavior
 
 - Watches newly mounted messages, including messages brought in by scrolling.
+- Replaces GitHub's Mermaid widget and native controls with Mermaider, using the
+  source embedded in the page. No access to the cross-origin SVG iframe is needed.
+- Handles GitHub's partial navigation, newly loaded comments, and updated diagrams.
 - Watches changes to code text while Claude streams, with a 300 ms debounce.
 - Serializes renders and discards outdated results.
 - Leaves unparseable initial blocks as code. After a successful render, retains
@@ -43,6 +48,12 @@ isolated world. If that metadata becomes unavailable, recognized Mermaid diagram
 declarations serve as a fallback. Standard `pre > code.language-mermaid` blocks
 are also supported.
 
+GitHub stores diagram definitions on `.js-render-enrichment-target` elements as
+`data-plain`/`data-json`, or in the rendering iframe's `data-content` attribute.
+Mermaider re-renders these with its bundled Mermaid library and only hides the
+native widget after a successful render. Other embedded content is untouched;
+invalid or unsupported Mermaid stays in GitHub's viewer.
+
 Mermaid uses strict security mode, disables HTML flowchart labels, and does not
 activate diagram click handlers. Theme follows the system preference at page load.
 Changes are local to your browser; the conversation itself is not edited.
@@ -57,7 +68,7 @@ npm run format:check
 npm run build
 ```
 
-After a rebuild, reload the extension in `chrome://extensions` and refresh Claude.
+After a rebuild, reload the extension in `chrome://extensions` and refresh the target tab.
 
 ### Layout and conventions
 

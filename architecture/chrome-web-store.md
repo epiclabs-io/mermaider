@@ -28,8 +28,10 @@ approval, not necessarily when the GitHub workflow finishes.
 3. Complete the listing: name, description, category, required screenshots and
    promotional images, support URL, visibility, privacy declarations, and test
    instructions. Use `dist/icons/icon-128.png` as the listing icon. Disclose that
-   the extension reads code blocks on claude.ai to render them locally. It does
+   the extension reads code blocks on claude.ai and github.com to render them locally. It does
    not collect or transmit conversations. See `architecture/privacy.md`.
+   GitHub access is needed to replace its Mermaid widgets in issues, PRs, comments,
+   and Markdown. The extension does not need access to viewscreen.githubusercontent.com.
 4. In Google Cloud Console create/select a project and enable the **Chrome Web
    Store API**. Configure OAuth consent, add the
    `https://www.googleapis.com/auth/chromewebstore` scope, and create an OAuth

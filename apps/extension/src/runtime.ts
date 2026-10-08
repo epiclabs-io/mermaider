@@ -1,4 +1,5 @@
 import { createViewer } from "./viewer.js";
+import { readGitHubBlock } from "./github.js";
 
 export type RenderDiagram = (
   id: string,
@@ -17,16 +18,27 @@ interface State {
   lastGood?: string;
 }
 
-const SELECTOR = ".epitaxy-codeblock, pre";
+const SELECTOR = ".epitaxy-codeblock, .js-render-enrichment-target, .highlight-source-mermaid, pre";
 const DECLARATION =
   /^(?:%%[^\n]*\n\s*)*(?:graph|flowchart|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|sankey-beta|xychart-beta|block-beta|packet-beta|architecture-beta|kanban|radar-beta|treemap-beta)\b/;
 
 export function readBlock(block: HTMLElement) {
+  const github = readGitHubBlock(block);
+  if (github) {
+    return github;
+  }
   const fence = block.querySelector("[data-code-text]");
   const code = block.querySelector("code");
-  const source = fence?.getAttribute("data-code-text") ?? code?.textContent ?? "";
+  const source =
+    fence?.getAttribute("data-code-text") ??
+    code?.textContent ??
+    (block.matches("pre") ? block.textContent : block.querySelector("pre")?.textContent) ??
+    "";
   const explicit =
     block.getAttribute("data-mermaider-language") ??
+    block.getAttribute("lang") ??
+    block.getAttribute("data-language") ??
+    (block.matches(".highlight-source-mermaid") ? "mermaid" : undefined) ??
     code?.className.match(/(?:language|lang)-([^\s]+)/)?.[1];
   // Syntax fallback keeps working if Claude changes its React internals.
   const mermaid = explicit ? explicit.toLowerCase() === "mermaid" : DECLARATION.test(source.trim());
@@ -78,8 +90,16 @@ export function startMermaider({
     if (!block.isConnected || block.closest("[data-mermaider-ui]")) {
       return;
     }
-    // Don't process a nested pre twice.
-    if (block.matches("pre") && block.closest(".epitaxy-codeblock")) {
+    // Replace the entire host widget, including its toolbar, once.
+    if (
+      (block.matches("pre") && block.closest(".epitaxy-codeblock, .highlight-source-mermaid")) ||
+      (!block.matches(".js-render-enrichment-target") &&
+        block.closest(".js-render-enrichment-target"))
+    ) {
+      const nested = states.get(block);
+      if (nested) {
+        remove(nested);
+      }
       return;
     }
     const { source, mermaid } = readBlock(block);
@@ -183,7 +203,17 @@ export function startMermaider({
     childList: true,
     characterData: true,
     attributes: true,
-    attributeFilter: ["data-code-text", "data-mermaider-language"],
+    attributeFilter: [
+      "data-code-text",
+      "data-mermaider-language",
+      "data-plain",
+      "data-json",
+      "data-content",
+      "data-type",
+      "src",
+      "lang",
+      "data-language",
+    ],
   });
   document.querySelectorAll<HTMLElement>(SELECTOR).forEach(schedule);
   return {
