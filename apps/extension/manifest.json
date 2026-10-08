@@ -12,6 +12,12 @@
   },
   "content_scripts": [
     {
+      "matches": ["https://viewscreen.githubusercontent.com/markdown/mermaid*"],
+      "js": ["github-frame.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    },
+    {
       "matches": ["https://claude.ai/*"],
       "js": ["detect.js"],
       "world": "MAIN",

@@ -49,10 +49,12 @@ export function startMermaider({
   document,
   render,
   delay = 300,
+  skipGitHubWidgets = false,
 }: {
   document: Document;
   render: RenderDiagram;
   delay?: number;
+  skipGitHubWidgets?: boolean;
 }) {
   const states = new WeakMap<HTMLElement, State>();
   const active = new Set<State>();
@@ -88,6 +90,9 @@ export function startMermaider({
 
   function schedule(block: HTMLElement) {
     if (!block.isConnected || block.closest("[data-mermaider-ui]")) {
+      return;
+    }
+    if (skipGitHubWidgets && block.matches(".js-render-enrichment-target")) {
       return;
     }
     // Replace the entire host widget, including its toolbar, once.

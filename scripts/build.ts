@@ -9,7 +9,11 @@ const app = path.join(root, "apps/extension");
 const dist = path.join(root, "dist");
 await mkdir(path.join(dist, "icons"), { recursive: true });
 await build({
-  entryPoints: [path.join(app, "src/content.ts"), path.join(app, "src/detect.ts")],
+  entryPoints: [
+    path.join(app, "src/content.ts"),
+    path.join(app, "src/detect.ts"),
+    path.join(app, "src/github-frame.ts"),
+  ],
   bundle: true,
   format: "iife",
   target: "chrome120",

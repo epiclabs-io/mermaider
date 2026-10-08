@@ -6,6 +6,7 @@ const ICONS = {
   close: '<path d="m6 6 12 12M6 18 18 6"/>',
   fit: '<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/><rect x="7" y="7" width="10" height="10" rx="1"/>',
   copy: '<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
+  renderer: '<path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/>',
 };
 
 function icon(button: HTMLButtonElement, name: keyof typeof ICONS, label: string) {
@@ -14,7 +15,13 @@ function icon(button: HTMLButtonElement, name: keyof typeof ICONS, label: string
   button.setAttribute("aria-label", label);
 }
 
-export function createViewer(document: Document, block: HTMLElement) {
+export interface ViewerOptions {
+  viewportHeight?: number;
+  fitPadding?: number;
+  onRendererToggle?: () => void;
+}
+
+export function createViewer(document: Document, block: HTMLElement, options: ViewerOptions = {}) {
   const win = document.defaultView!;
   const ui = document.createElement("section");
   ui.setAttribute("data-mermaider-ui", "");
@@ -57,6 +64,10 @@ export function createViewer(document: Document, block: HTMLElement) {
     fitScale = 1;
   let interacted = false;
   let drag: { id: number; x: number; y: number } | undefined;
+  let viewportHeight = options.viewportHeight;
+  const rendererToggle = options.onRendererToggle
+    ? button("renderer", "Use Mermaider SVG", options.onRendererToggle)
+    : undefined;
 
   function button(name: keyof typeof ICONS, label: string, onClick: () => void) {
     const b = document.createElement("button");
@@ -160,7 +171,8 @@ export function createViewer(document: Document, block: HTMLElement) {
     }
     const vw = diagram.clientWidth || 900;
     const vh = diagram.clientHeight || 300;
-    fitScale = Math.min((vw - 32) / width, (vh - 32) / height);
+    const padding = options.fitPadding ?? 32;
+    fitScale = Math.max(0.01, Math.min((vw - padding) / width, (vh - padding) / height));
     scale = Math.max(0.01, fitScale);
     x = (vw - width * scale) / 2;
     y = (vh - height * scale) / 2;
@@ -266,9 +278,36 @@ export function createViewer(document: Document, block: HTMLElement) {
         block.after(ui);
       }
     },
-    setSVG(svg: string) {
-      canvas.innerHTML = svg;
-      const el = canvas.querySelector("svg");
+    setRenderer(renderer: "GitHub" | "Mermaider") {
+      title.textContent = `Mermaid · ${renderer}`;
+      if (rendererToggle) {
+        icon(
+          rendererToggle,
+          "renderer",
+          renderer === "GitHub" ? "Use Mermaider SVG" : "Use GitHub SVG"
+        );
+        rendererToggle.setAttribute("aria-pressed", String(renderer === "Mermaider"));
+      }
+    },
+    setViewportHeight(value: number) {
+      viewportHeight = value;
+      diagram.style.setProperty("--mermaider-height", `${value}px`);
+      if (!interacted) {
+        fit();
+      }
+    },
+    setSVG(svg: string, settings: { isolate?: boolean; reset?: boolean } = {}) {
+      canvas.replaceChildren();
+      let root: HTMLElement | ShadowRoot = canvas;
+      if (settings.isolate) {
+        // GitHub reuses SVG IDs across iframe documents. Keep their styles and
+        // fragment references isolated when showing several diagrams together.
+        const host = document.createElement("div");
+        canvas.append(host);
+        root = host.attachShadow({ mode: "open" });
+      }
+      root.innerHTML = svg;
+      const el = root.querySelector("svg");
       const values = el
         ?.getAttribute("viewBox")
         ?.trim()
@@ -284,8 +323,11 @@ export function createViewer(document: Document, block: HTMLElement) {
       }
       diagram.style.setProperty(
         "--mermaider-height",
-        `${Math.max(220, Math.min(480, height + 32))}px`
+        `${viewportHeight ?? Math.max(220, Math.min(480, height + 32))}px`
       );
+      if (settings.reset) {
+        interacted = false;
+      }
       if (!interacted) {
         fit();
       }

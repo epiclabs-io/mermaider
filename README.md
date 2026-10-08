@@ -20,7 +20,8 @@ npm run build
 
 Mermaid is bundled into the extension: no CDN, remote scripts, backend, or API
 keys are needed. No extension permissions are requested beyond content-script
-access to Claude and GitHub.
+access to Claude, GitHub, and GitHub's specific Mermaid iframe URL. On upgrade,
+approve the additional iframe site access if Chrome asks.
 
 Requires Node.js 24+ and npm. The extension requires Chrome 120+.
 

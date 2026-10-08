@@ -31,7 +31,10 @@ approval, not necessarily when the GitHub workflow finishes.
    the extension reads code blocks on claude.ai and github.com to render them locally. It does
    not collect or transmit conversations. See `architecture/privacy.md`.
    GitHub access is needed to replace its Mermaid widgets in issues, PRs, comments,
-   and Markdown. The extension does not need access to viewscreen.githubusercontent.com.
+   and Markdown. Access to `viewscreen.githubusercontent.com/markdown/mermaid*`
+   lets a bundled content script read GitHub's rendered SVG and pass it locally
+   to the matching GitHub page, preserving its rendering while replacing navigation.
+   No JavaScript is downloaded or evaluated by the extension.
 4. In Google Cloud Console create/select a project and enable the **Chrome Web
    Store API**. Configure OAuth consent, add the
    `https://www.googleapis.com/auth/chromewebstore` scope, and create an OAuth

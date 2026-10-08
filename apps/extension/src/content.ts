@@ -1,5 +1,6 @@
 import mermaid from "mermaid";
 import { startMermaider } from "./runtime.js";
+import { startGitHubViewers } from "./github-viewers.js";
 
 mermaid.initialize({
   startOnLoad: false,
@@ -8,7 +9,14 @@ mermaid.initialize({
   flowchart: { htmlLabels: false },
   suppressErrorRendering: true,
 });
+const render = (id: string, source: string, container: HTMLElement) =>
+  mermaid.render(id, source, container);
+const github = location.hostname === "github.com";
+if (github) {
+  startGitHubViewers({ document, render });
+}
 startMermaider({
   document,
-  render: (id, source, container) => mermaid.render(id, source, container),
+  render,
+  skipGitHubWidgets: github,
 });

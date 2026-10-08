@@ -6,9 +6,7 @@ export function readGitHubBlock(
     return undefined;
   }
 
-  const frame = Array.from(block.querySelectorAll<HTMLIFrameElement>("iframe[src]")).find(
-    (element) => isMermaidFrame(element.getAttribute("src") ?? "")
-  );
+  const frame = findGitHubFrame(block);
   const mermaid = !!block.querySelector('[data-type="mermaid"]') || !!frame;
   if (!mermaid) {
     return { source: "", mermaid: false };
@@ -21,6 +19,12 @@ export function readGitHubBlock(
     block.querySelector('clipboard-copy[aria-label="Copy mermaid code"]')?.getAttribute("value") ??
     "";
   return { source, mermaid: true };
+}
+
+export function findGitHubFrame(block: HTMLElement): HTMLIFrameElement | undefined {
+  return Array.from(block.querySelectorAll<HTMLIFrameElement>("iframe[src]")).find((element) =>
+    isMermaidFrame(element.getAttribute("src") ?? "")
+  );
 }
 
 function isMermaidFrame(src: string): boolean {
