@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: release-master
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+      - run: npm test
+      - name: Set monotonically increasing Chrome version
+        id: version
+        run: echo "version=0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+      - run: npm run package
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mermaider-release
+          path: dist/mermaider.zip
+      - name: Publish GitHub release archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            gh release upload "v${VERSION}" dist/mermaider.zip --clobber
+          else
+            gh release create "v${VERSION}" dist/mermaider.zip --target "$GITHUB_SHA" --title "Mermaider ${VERSION}" --generate-notes
+          fi
+      - name: Chrome Web Store setup status
+        if: vars.CWS_PUBLISH_ENABLED != 'true'
+        run: echo "Chrome Web Store publishing is not enabled. Follow architecture/chrome-web-store.md, then set CWS_PUBLISH_ENABLED=true." >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    needs: package
+    if: vars.CWS_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: mermaider-release
+          path: dist
+      - name: Upload and publish to Chrome Web Store
+        run: npm run publish:store
+        env:
+          CWS_PUBLISHER_ID: ${{ vars.CWS_PUBLISHER_ID }}
+          CWS_EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}

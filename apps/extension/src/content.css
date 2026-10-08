@@ -1,0 +1,122 @@
+[data-mermaider-hidden] {
+  display: none !important;
+}
+.mermaider {
+  box-sizing: border-box;
+  margin: 12px 0;
+  max-width: 100%;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 10px;
+  background: rgba(128, 128, 128, 0.05);
+  overflow: hidden;
+}
+.mermaider-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  font:
+    12px/1.5 system-ui,
+    sans-serif;
+}
+.mermaider-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.mermaider-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 5px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+.mermaider-toolbar button:focus-visible {
+  outline: 2px solid #8973cf;
+  outline-offset: 2px;
+}
+.mermaider-status {
+  opacity: 0.7;
+}
+.mermaider-toolbar button:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+.mermaider-diagram {
+  position: relative;
+  height: var(--mermaider-height, 300px);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.mermaider-diagram:focus-visible {
+  outline: 2px solid #8973cf;
+  outline-offset: -2px;
+}
+.mermaider-dragging {
+  cursor: grabbing;
+}
+.mermaider-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.mermaider-source {
+  margin: 0;
+  padding: 16px;
+  min-height: 100px;
+  max-height: 480px;
+  overflow: auto;
+  white-space: pre;
+  font:
+    13px/1.6 ui-monospace,
+    monospace;
+  color: inherit;
+  background: transparent;
+}
+.mermaider [hidden] {
+  display: none !important;
+}
+.mermaider-modal {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  width: calc(100vw - 48px);
+  height: calc(100dvh - 48px);
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 12px;
+  background: Canvas;
+  color: CanvasText;
+}
+.mermaider-modal::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+.mermaider-maximized {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  border: 0;
+}
+.mermaider-maximized .mermaider-diagram {
+  flex: 1;
+  min-height: 0;
+}
+.mermaider-maximized .mermaider-source {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}

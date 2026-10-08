@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>Mermaider browser verification</title>
+  <link rel="stylesheet" href="/dist/content.css" />
+  <style>
+    body {
+      font: 16px system-ui;
+      max-width: 900px;
+      margin: 40px auto;
+    }
+    pre {
+      white-space: pre-wrap;
+    }
+  </style>
+  <h1>Mermaider browser verification</h1>
+  <main id="messages">
+    <div class="epitaxy-codeblock" data-mermaider-language="mermaid">
+      <div
+        data-code-text='graph LR
+ A["PR-A: renderFrame (trim #224)"] --> C["PR-C: server + client modules"]
+ B["PR-B: Motion, MotionClock, integrator"] --> C'
+      >
+        <diffs-container></diffs-container>
+      </div>
+    </div>
+  </main>
+  <script src="/dist/content.js"></script>
+</html>

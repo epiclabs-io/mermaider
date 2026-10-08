@@ -1,0 +1,15 @@
+{
+  "name": "@epiclabs-io/mermaider-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsx ../../scripts/build.ts",
+    "typecheck": "tsc -p .",
+    "lint": "eslint src tests",
+    "test": "vitest run --root ../.."
+  },
+  "dependencies": {
+    "mermaid": "^11.12.0"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "mermaider-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "lib/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc -p scripts",
+    "lint": "eslint apps scripts",
+    "format": "prettier --write . --ignore-unknown",
+    "format:check": "prettier --check . --ignore-unknown",
+    "test": "vitest run",
+    "package": "npm run build && tsx scripts/package.ts",
+    "publish:store": "tsx scripts/publish-store.ts",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^24.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
+    "@typescript-eslint/parser": "^8.59.1",
+    "eslint": "^10.2.1",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
+    "typescript": "5.4.5",
+    "vitest": "^4.1.9",
+    "tsx": "^4.20.0",
+    "sharp": "^0.35.5",
+    "fflate": "^0.8.2",
+    "esbuild": "^0.25.0",
+    "jsdom": "^26.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{js,jsx,mjs,cjs,json,jsonc,yml,yaml,md,html,css,scss}": "prettier --write"
+  },
+  "license": "UNLICENSED"
+}
