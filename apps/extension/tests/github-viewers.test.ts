@@ -140,6 +140,21 @@ test("rejects foreign origins, unrelated frames and old tokens, and sanitizes SV
   }
 });
 
+test("native state diagram notes preserve HTML line breaks and replace the GitHub widget", () => {
+  const f = fixture();
+  try {
+    f.snapshot(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 1074 385.5" aria-roledescription="stateDiagram"><g><foreignObject width="135" height="144"><div xmlns="http://www.w3.org/1999/xhtml"><span><p>SnappedContainer + SnappedCell<br>static body at the cell pose<br>no Decay, not in the FREE cap</p></span></div></foreignObject></g></svg>'
+    );
+    expect(f.block.hasAttribute("data-mermaider-hidden")).toBe(true);
+    expect(f.native()?.querySelectorAll("br")).toHaveLength(2);
+    expect(f.native()?.textContent).toContain("static body at the cell pose");
+    expect(f.render).not.toHaveBeenCalled();
+  } finally {
+    f.close();
+  }
+});
+
 test("edited source invalidates cached renderers and old snapshots; navigation cleans up", async () => {
   const f = fixture();
   try {

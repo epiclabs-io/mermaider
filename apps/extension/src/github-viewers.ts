@@ -206,17 +206,25 @@ export function startGitHubViewers({
     if (state.previousNative === message.svg && !message.refreshed) {
       return;
     }
-    const svg = purify.sanitize(message.svg, {
+    const fragment = purify.sanitize(message.svg, {
       USE_PROFILES: { svg: true, svgFilters: true, html: true },
       ADD_TAGS: ["foreignObject"],
       HTML_INTEGRATION_POINTS: { foreignobject: true },
       FORBID_TAGS: ["script", "iframe", "object", "embed", "a"],
+      RETURN_DOM_FRAGMENT: true,
     });
-    const parsed = new win.DOMParser().parseFromString(svg, "image/svg+xml");
-    const element = parsed.documentElement;
-    if (element.localName !== "svg" || parsed.querySelector("parsererror")) {
+    // GitHub serializes mixed SVG/HTML with outerHTML, including HTML void
+    // elements such as <br>. Validate the sanitized DOM, not an XML reparse
+    // that incorrectly rejects valid foreignObject labels.
+    const element = fragment.firstElementChild;
+    if (
+      fragment.children.length !== 1 ||
+      element?.localName !== "svg" ||
+      element.namespaceURI !== "http://www.w3.org/2000/svg"
+    ) {
       return;
     }
+    const svg = new win.XMLSerializer().serializeToString(element);
     state.rawNative = message.svg;
     state.previousNative = undefined;
     state.native = svg;
